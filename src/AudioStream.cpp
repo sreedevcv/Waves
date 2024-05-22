@@ -1,10 +1,12 @@
 #include "AudioStream.hpp"
 #include "portaudio.h"
 
+#include <cstdint>
 #include <iostream>
 
-AudioStream::AudioStream(AudioMetaData audioMetaData)
-    : metaData{audioMetaData} 
+AudioStream::AudioStream(AudioMetaData audioMetaData, bool isStreamOuptut)
+    : metaData(audioMetaData)
+    , isOutput(false)
 {
     // Initialize PortAudio
     err = Pa_Initialize();
@@ -24,13 +26,49 @@ AudioStream::AudioStream(AudioMetaData audioMetaData)
     outputParameters.sampleFormat = paFloat32;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
+}
 
+AudioStream::~AudioStream()
+{
+    err = Pa_Terminate();
+    if (err != paNoError) {
+        logError();
+    }
 }
 
 void AudioStream::logError()
 {
-    Pa_Terminate();
     std::cerr << "An error occurred while using the portaudio stream\n";
     std::cerr << "Error number: " << err << "\n";
-    std::cerr << "Error message: " << Pa_GetErrorText( err ) << std::endl;
+    std::cerr << "Error message: " << Pa_GetErrorText(err) << std::endl;
+}
+
+int callback(
+    const void* inputBuffer, void* outputBuffer,
+    unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags,
+    void* userData)
+{
+    AudioStream* stream = (AudioStream*)userData;
+
+    return stream->callback(inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags);
+}
+
+void AudioStream::setCallback(std::function<callback_t>& dataCallback)
+{
+    callback = dataCallback;
+}
+
+void AudioStream::startStream()
+{
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, metaData.sampleRate, 64, paClipOff, ::callback, this);
+    if (err != paNoError) {
+        logError();
+    }
+
+    err = Pa_StartStream(stream);
+    if (err != paNoError) {
+        logError();
+    }
 }
