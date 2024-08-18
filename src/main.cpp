@@ -4,7 +4,9 @@
 
 #include "Audio.hpp"
 #include "AudioStream.hpp"
+#include "SourcePlayer.hpp"
 #include "WavFile.hpp"
+#include "WavSource.hpp"
 #include "WaveGenerator.hpp"
 
 #include "portaudio.h"
@@ -28,55 +30,61 @@ int sum(std::vector<uint8_t>& data)
 
 int main()
 {
-    AudioMetaData metaData = {
-        .sampleRate = 32000,
-        .milliseconds = 3000,
-        .channels = 2,
-        .sampleSizeInBits = 8
-    };
+    WavSource source("/home/sreedev/Projects/Waves/assets/party-monster-100.wav");
+    SourcePlayer player(source);
+    player.play();
+    Pa_Sleep(10 * 1000);
+    return 0;
 
-    WaveGenerator sineWave(metaData);
-    std::vector<uint8_t> data = sineWave.createSineWave(100, 3000);
-    //
-    // WavFile waveFile("test.wav");
-    // waveFile.writeFile(data, metaData);
-    //
-    // int s = sum(data);
-    // std::cout << "Sum " << s << " " << data.size() << "\n";
-    int count = 0;
+    // AudioMetaData metaData = {
+    //     .sampleRate = 32000,
+    //     .milliseconds = 3000,
+    //     .channels = 2,
+    //     .sampleSizeInBits = 8
+    // };
 
-    float sine[200];
-    for (int i = 0; i < 200; i++) {
-        sine[i] = sinf((i / (float)200) * M_PI * 2.0);
-    }
+    // WaveGenerator sineWave(metaData);
+    // std::vector<uint8_t> data = sineWave.createSineWave(100, 3000);
+    // //
+    // // WavFile waveFile("test.wav");
+    // // waveFile.writeFile(data, metaData);
+    // //
+    // // int s = sum(data);
+    // // std::cout << "Sum " << s << " " << data.size() << "\n";
+    // int count = 0;
 
-    std::function<AudioStream::callback_t> callback
-        = [&](
-              const void* inputBuffer,
-              void* outputBuffer,
-              unsigned long framesPerBuffer,
-              const PaStreamCallbackTimeInfo* timeInfo,
-              PaStreamCallbackFlags statusFlags) -> int {
-        float* out = (float*)outputBuffer;
+    // float sine[200];
+    // for (int i = 0; i < 200; i++) {
+    //     sine[i] = sinf((i / (float)200) * M_PI * 2.0);
+    // }
 
-        for (int i = 0; i < framesPerBuffer * metaData.channels; i++) {
-            // *out++ = sine[count++];
-            // if (count == 200)
-            //     count = 0;
+    // std::function<AudioStream::callback_t> callback
+    //     = [&](
+    //           const void* inputBuffer,
+    //           void* outputBuffer,
+    //           unsigned long framesPerBuffer,
+    //           const PaStreamCallbackTimeInfo* timeInfo,
+    //           PaStreamCallbackFlags statusFlags) -> int {
+    //     float* out = (float*)outputBuffer;
 
-            *out++ = data[count++];
-            if (count == data.size())
-                count = 0;
-        }
+    //     for (int i = 0; i < framesPerBuffer * metaData.channels; i++) {
+    //         // *out++ = sine[count++];
+    //         // if (count == 200)
+    //         //     count = 0;
 
-        return paContinue;
-    };
+    //         *out++ = data[count++];
+    //         if (count == data.size())
+    //             count = 0;
+    //     }
 
-    AudioStream stream(metaData, false);
-    stream.setCallback(callback);
-    stream.startStream();
+    //     return paContinue;
+    // };
 
-    Pa_Sleep(3 * 1000);
+    // AudioStream stream(metaData, false);
+    // stream.setCallback(callback);
+    // stream.startStream();
+
+    // Pa_Sleep(3 * 1000);
 }
 
 // #include "portaudio.h"

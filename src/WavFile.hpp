@@ -8,19 +8,19 @@
 
 class WavFile {
 public:
-    WavFile(std::string filePath);
+    WavFile(const std::string& filePath);
     ~WavFile() = default;
 
-    void readFile();
+    Music readFile();
     void writeFile(std::vector<uint8_t>& data, const AudioMetaData& metaData);
 
 private:
     struct Header {
-        uint32_t riffHeader = *((uint32_t*)"RIFF");
+        uint8_t riffHeader[4] = {'R', 'I', 'F', 'F'};
         uint32_t fileSize;
-        uint32_t waveHeader = *((uint32_t*)"WAVE");
+        uint8_t waveHeader[4] = {'W', 'A', 'V', 'E'};
 
-        uint32_t formatChunkMarker = *((uint32_t*)"fmt ");
+        uint8_t formatChunkMarker[4] = {'f', 'm', 't', ' '};
         uint32_t headerLength = 16;
         uint16_t pcmFormat = 1; /* 1 = UnCompressed */
         uint16_t channelCount;
@@ -29,9 +29,10 @@ private:
         uint16_t blockAlign;
         uint16_t bitsPerSample;
 
-        uint32_t dataHeader = *((uint32_t*)"data");
+        uint8_t dataHeader[4] = {'d', 'a', 't', 'a'};
         uint32_t dataSize;
 
+        inline Header() { }
         inline Header(uint32_t audioDataSize,
             uint16_t channels,
             uint32_t sampleRate,

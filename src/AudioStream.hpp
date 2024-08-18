@@ -14,6 +14,7 @@ public:
     using callback_t = int(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags);
 
     void setCallback(std::function<callback_t>& dataCallback);
+    void setStreamFinishCallback(std::function<void()>& callback);
     void startStream();
 
     friend int callback(
@@ -22,6 +23,7 @@ public:
         const PaStreamCallbackTimeInfo* timeInfo,
         PaStreamCallbackFlags statusFlags,
         void* userData);
+    friend void streamFinishCallback(void* userData);
 
 private:
     PaStreamParameters outputParameters;
@@ -29,6 +31,7 @@ private:
     PaError err;
     AudioMetaData metaData;
     std::function<callback_t> callback;
+    std::function<void()> finishCallback;
     bool isOutput = false;
 
     void logError();

@@ -1,8 +1,25 @@
 #include "AudioStream.hpp"
 #include "portaudio.h"
 
-#include <cstdint>
 #include <iostream>
+
+int callback(
+    const void* inputBuffer, void* outputBuffer,
+    unsigned long framesPerBuffer,
+    const PaStreamCallbackTimeInfo* timeInfo,
+    PaStreamCallbackFlags statusFlags,
+    void* userData)
+{
+    AudioStream* stream = (AudioStream*)userData;
+
+    return stream->callback(inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags);
+}
+
+void streamFinishCallback(void* userData)
+{
+    AudioStream* stream = (AudioStream*)userData;
+    stream->finishCallback();
+}
 
 AudioStream::AudioStream(AudioMetaData audioMetaData, bool isStreamOuptut)
     : metaData(audioMetaData)
@@ -26,6 +43,12 @@ AudioStream::AudioStream(AudioMetaData audioMetaData, bool isStreamOuptut)
     outputParameters.sampleFormat = paFloat32;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
+
+    // err = Pa_SetStreamFinishedCallback(stream, &::streamFinishCallback);
+    // if (err != paNoError) {
+    //     logError();
+    //     return;
+    // }
 }
 
 AudioStream::~AudioStream()
@@ -41,18 +64,6 @@ void AudioStream::logError()
     std::cerr << "An error occurred while using the portaudio stream\n";
     std::cerr << "Error number: " << err << "\n";
     std::cerr << "Error message: " << Pa_GetErrorText(err) << std::endl;
-}
-
-int callback(
-    const void* inputBuffer, void* outputBuffer,
-    unsigned long framesPerBuffer,
-    const PaStreamCallbackTimeInfo* timeInfo,
-    PaStreamCallbackFlags statusFlags,
-    void* userData)
-{
-    AudioStream* stream = (AudioStream*)userData;
-
-    return stream->callback(inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags);
 }
 
 void AudioStream::setCallback(std::function<callback_t>& dataCallback)
@@ -71,4 +82,9 @@ void AudioStream::startStream()
     if (err != paNoError) {
         logError();
     }
+}
+
+void AudioStream::setStreamFinishCallback(std::function<void(void)>& callback)
+{
+    finishCallback = callback;
 }
