@@ -6,25 +6,19 @@ set(CMAKE_CXX_STANDARD 23)
 
 include(FetchContent)
 
-FetchContent_Declare(
-    PortAudio
-    GIT_REPOSITORY https://github.com/PortAudio/portaudio.git
-    GIT_TAG 5a1920d
-  )
-FetchContent_MakeAvailable(PortAudio)
+
+add_subdirectory(ui)
+add_subdirectory(src)
+include_directories(src/)
 
 add_executable(
     waves
-    src/main.cpp
-    src/WaveGenerator.cpp
-    src/WavFile.cpp
-    src/AudioStream.cpp
-    src/WavSource.cpp
-    src/SourcePlayer.cpp
+    main.cpp
 )
 
 
 target_link_libraries(
     waves
-    PortAudio
+    audio
+    UI
 )

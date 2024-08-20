@@ -2,6 +2,7 @@
 
 #include "AudioStream.hpp"
 #include "portaudio.h"
+#include <cstring>
 #include <functional>
 #include <print>
 

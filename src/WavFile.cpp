@@ -55,7 +55,7 @@ Music WavFile::readFile()
 
     const uint32_t sampleSize = header.bitsPerSample / 8;
     const uint32_t numOfSamples = header.dataSize / (sampleSize);
-    const uint64_t maxSampleSize = std::pow(2.0, header.bitsPerSample);
+    const uint64_t maxSampleSize = static_cast<uint64_t>(std::pow(2.0, header.bitsPerSample - 1)) - 1;
     std::vector<float> data(numOfSamples);
 
     for (int i = 0; i < bytes.size(); i += sampleSize) {
@@ -68,7 +68,7 @@ Music WavFile::readFile()
             // sample = sample | (bytes[i + j] << (8 * (sampleSize - j - 1)));
         }
 
-        float normalizedSample = ((sample / (float)maxSampleSize) - 0.5) * 2.0;
+        float normalizedSample = ((sample / static_cast<float>(maxSampleSize)) - 0.5) * 2.0;
         data[i / sampleSize] = normalizedSample;
 
         // std::println("{} {}", sample, normalizedSample);
