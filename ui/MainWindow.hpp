@@ -1,22 +1,15 @@
 #pragma once
 
-#include "qmainwindow.h"
-#include <qtmetamacros.h>
-#include <qwidget.h>
-
-// QT_BEGIN_NAMESPACE
-// namespace Ui {
-// class MainWindow;
-// }
-// QT_END_NAMESPACE
+#include "AudioChart.hpp"
+#include <QMainWindow>
 
 class MainWindow : public QMainWindow {
     // Q_OBJECT
 
 public:
     MainWindow(QWidget* parent = nullptr);
-    virtual ~MainWindow();
+    virtual ~MainWindow() = default;
 
 private:
-    // Ui::MainWindow* ui;
+    AudioChart* chart;
 };
